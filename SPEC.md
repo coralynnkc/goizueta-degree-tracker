@@ -5,85 +5,59 @@ this file is what we change as decisions get made.
 
 ## What it does
 
-A Goizueta BBA student sees every requirement their degree imposes, marks courses as completed, in
-progress, or planned, and places planned courses into future terms. The tracker tells them what is
-still unmet and whether their plan for the remaining terms covers it.
+A Goizueta BBA student fills in a sheet that looks like Google Sheets: one row per requirement, with
+dropdowns for the course, term, status and grade. The sheet is split into the Blue GER, business
+requirements (prerequisites, functional core, flex core, professional development, electives) and
+area depths. Two cards beside it show GPA and remaining credits. A checkbox hides completed rows.
 
-Out of scope: live enrollment (sections, seats, instructors), OPUS/Canvas integration, transcripts,
-GPA, Emory College GER.
+Out of scope: live enrollment (sections, seats, instructors), OPUS/Canvas integration, reading
+transcripts, Emory College majors and minors.
 
 ## Decisions
 
-**No accounts, no database, no backend.** The requirement data is static and ships with the app as
-`src/data/bundle.json`. The plan is the only thing that persists, and it lives in `localStorage`
-under `gdt.plan.v1`. Consequences we accept:
+**No accounts, no database, no backend.** The plan lives in `localStorage` under `gdt.plan.v2`.
+A plan belongs to one browser; Export/Import moves it as a JSON file. Nothing a student enters leaves
+their machine.
 
-- A plan belongs to one browser. Clearing site data deletes it.
-- To move a plan between machines, the app will offer JSON export and import (`exportPlan` / `parsePlan` in `src/lib/plan.ts`).
-- Nothing a student enters leaves their machine, which also settles the privacy question.
+**The student assigns courses to rows.** The technical plan proposed a max-flow solver that works out
+which requirement each course counts toward. The sheet asks the student to make that choice in the
+dropdowns instead, and the app checks it: a course used in two rows is flagged (except GER rows,
+which double count by policy, repeatable BUS courses, and one bridge course between two depths).
 
-If accounts come later, the `Plan` shape in `src/lib/plan.ts` becomes the row we store, and the
-solver stays on the client.
+**Requirement data is typed TypeScript, not CSV.** `src/data/` holds it, transcribed from the
+sources below, with `DATA_UPDATED` shown in the header and footer. Change that date whenever the
+data changes.
 
-**Requirement data is authored as CSV, not JSON**, so the people transcribing requirements never
-touch code. `npm run data` validates and compiles it; errors cite the file and spreadsheet row.
+## Data sources (checked Nov 6, 2026)
 
-## Data
+- Blue GER (Fall 2023 and later): https://college.catalog.emory.edu/dept/ger#blue-ger-fall-2023-and-later
+- BBA curriculum: https://goizueta.catalog.emory.edu/degreeprograms/bba/bbaoverview#curriculum1
+- Goizueta Area Depth Sheet, updated Nov 2026 (PDF from the BBA Canvas page)
 
-Four files in `data/`, one per table. `data/example/` is a made-up program used by tests; do not
-put real requirements there.
+## Files
 
-| File | Columns |
+| File | What it holds |
 | --- | --- |
-| `programs.csv` | `id, name, degree_type, school, catalog_year` |
-| `courses.csv` | `id, subject, number, title, credits` |
-| `requirements.csv` | `id, program_id, parent_id, label, rule_kind, threshold, allow_shared, display_order, source, signed_off_by` |
-| `requirement_courses.csv` | `requirement_id, course_id` |
+| `src/data/catalog.ts` | every course in a dropdown: code, title, credits, immersive tag, notes |
+| `src/data/requirements.ts` | GER and business rows, sources, contact, `DATA_UPDATED` |
+| `src/data/depths.ts` | the 12 area depths: flex core, slots, related courses, limits |
+| `src/lib/sheet.ts` | GPA, credit totals, duplicate warnings, depth checks, elective tally |
+| `src/lib/plan.ts` | the saved plan and localStorage |
 
-Rules the compiler enforces:
+## Rules the app checks
 
-- `rule_kind` is `all` (every child), `count` (`threshold` children, or courses at a leaf), or
-  `credits` (`threshold` credit hours). `count` and `credits` need a threshold; `all` leaves it blank.
-- `parent_id` blank means a top-level block. Parents must exist, be in the same program, and not form
-  a cycle.
-- A requirement either has children or has courses listed in `requirement_courses.csv`, not both and
-  not neither.
-- Every row has a `source` (catalog page or the audit it came from). `signed_off_by` is the second
-  reader; blank means unchecked.
+- GPA: credit-weighted over rows with a letter grade, each course counted once. S/U, P, W, AP
+  and transfer don't affect it. Business GPA uses ACT/FIN/ISOM/MKT/OAM/BUS courses only.
+- Credits: completed, in progress and planned, each course counted once; waived rows earn none.
+  The total defaults to 128 and is editable. **The catalog pages don't state the total; confirm it.**
+- Business electives: six, counting depth courses and added electives that are planned or later;
+  at least one immersive. Courses from outside Goizueta don't count.
+- Depths: required flex core on the sheet, at most one related course, per-area caps
+  ("at most one ISOM", "at most two from any single area").
 
-## Solver
+## Not checked yet
 
-`solve(bundle, plan)` in `src/lib/solver.ts` (not yet written). One course can appear in several
-requirement lists but may only count toward one, so progress is a max-flow problem:
-
-- source → each counted course, capacity = its credits
-- course → each leaf requirement that accepts it
-- leaf → sink, capacity = its threshold in credits (for `count` leaves, use capacity 1 per course
-  and threshold 1 per edge instead)
-
-`allow_shared` requirements are evaluated outside the network with a membership test, so a shared
-course never consumes capacity. The solver returns per-requirement progress, which leaf each course
-was spent on, and surplus courses. The cases it must pass are in `src/lib/solver.test.ts`.
-
-Open question for the solver owner: mixing `count` and `credits` leaves in one network needs a
-decision on units. Splitting each course into a "slot" node and a "credits" node is one option.
-
-## Views
-
-**Checklist.** The requirement tree as collapsible sections, each with progress against its
-threshold. Satisfied sections collapse by default; a toggle hides them. Under each unmet requirement,
-the acceptable courses not yet taken. Completed courses show which requirement they were spent on.
-
-**Planner.** Remaining terms as columns, planned courses as draggable cards (dnd-kit). Each column
-totals its credits and warns outside a normal load.
-
-Both views read the same plan and solver output; `hideCompleted` is part of the plan so it carries
-across views.
-
-Every view shows the unofficial-tool disclaimer.
-
-## Not decided yet
-
-- Which programs we load beyond the BBA core, and the catalog year.
-- Credit-load range for the planner warning.
-- Whether "in progress" counts toward progress by default.
+- GER rules about timing, 3+ credit minimums and C-or-better grades (shown as notes only).
+- Matriculation date differences (e.g. the Accounting flex core for Fall 25 and earlier).
+- The ISOM AI track and the Business Analytics "ISOM related course" rule (shown as notes).
+- Two non-business electives, one waived with two or more depths.

@@ -8,24 +8,23 @@ why it is built this way.
 
 ```sh
 npm install
-npm run dev     # compiles data/ into src/data/bundle.json, then starts http://localhost:3000
+npm run dev     # http://localhost:3000
 npm test
 ```
 
-## Adding requirement data
+## Updating requirement data
 
-Edit the CSVs in `data/` (or export them from the shared spreadsheet with the same column names),
-then run `npm run data`. If a row is wrong it tells you which file and row. Column definitions are in
-`SPEC.md`.
+Edit the files in `src/data/` (see `SPEC.md`), bump `DATA_UPDATED` in `src/data/requirements.ts`,
+and run `npm test`, which checks that every course a row or depth refers to exists.
 
 ## Layout
 
 ```
-data/                 authoring CSVs (real data); data/example/ is a made-up test fixture
-scripts/build-data.ts CSV -> src/data/bundle.json
-src/lib/types.ts      requirement model
-src/lib/compile.ts    CSV validation
-src/lib/plan.ts       student plan + localStorage
-src/lib/solver.ts     requirement satisfaction (to do)
-src/app/              UI
+src/data/catalog.ts       courses
+src/data/requirements.ts  GER and business rows, sources, last-updated date
+src/data/depths.ts        area depths
+src/lib/sheet.ts          GPA, credits, warnings, depth checks
+src/lib/plan.ts           saved plan + localStorage
+src/components/           sheet, cells, cards
+src/app/page.tsx          page layout
 ```

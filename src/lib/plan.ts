@@ -1,41 +1,47 @@
 "use client";
 
-// The student's plan: the only state that persists. It lives in localStorage
-// (one plan per browser) and can be exported/imported as JSON so someone can
-// move it to another laptop during testing.
+// The student's sheet: the only state that persists. It lives in localStorage (one plan per
+// browser) and can be exported/imported as JSON to move it to another device.
 
 import { useEffect, useRef, useState } from "react";
 
-export type CourseStatus = "completed" | "in_progress" | "planned";
+export type Status = "" | "planned" | "in_progress" | "completed" | "waived";
 
-export interface PlannedCourse {
-  status: CourseStatus;
-  term: string | null; // a key into Plan.terms; null for completed courses with no term recorded
+export interface RowState {
+  course?: string; // course id for dropdown rows; OTHER for an advisor-approved course
+  text?: string; // typed course code (GER / elective rows, or OTHER)
+  credits?: number; // overrides the catalog credits
+  term?: string;
+  status?: Status;
+  grade?: string;
 }
 
 export interface Plan {
-  version: 1;
-  programIds: string[]; // one for now; an array so a second major/minor fits later
-  terms: string[]; // ordered term labels, e.g. ["Spring 2027", "Fall 2027"]
-  courses: Record<string, PlannedCourse>; // keyed by Course.id
-  hideCompleted: boolean; // shared by both views
+  version: 2;
+  rows: Record<string, RowState>; // keyed by row id
+  extra: Record<string, string[]>; // subsection id -> ids of rows the student added
+  depths: string[]; // chosen area depth ids, in order
+  hideCompleted: boolean;
+  totalCredits: number;
 }
 
-const STORAGE_KEY = "gdt.plan.v1";
+export const OTHER = "__other";
+const STORAGE_KEY = "gdt.plan.v2";
 const SAVE_DEBOUNCE_MS = 300;
 
 export const emptyPlan = (): Plan => ({
-  version: 1,
-  programIds: [],
-  terms: [],
-  courses: {},
+  version: 2,
+  rows: {},
+  extra: {},
+  depths: [],
   hideCompleted: false,
+  totalCredits: 128,
 });
 
 export function parsePlan(raw: string): Plan | null {
   try {
     const p = JSON.parse(raw);
-    if (p?.version !== 1 || typeof p.courses !== "object" || !Array.isArray(p.terms)) return null;
+    if (p?.version !== 2 || typeof p.rows !== "object" || !Array.isArray(p.depths)) return null;
     return { ...emptyPlan(), ...p };
   } catch {
     return null;
@@ -56,7 +62,7 @@ function savePlan(plan: Plan) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
   } catch {
-    // Nothing useful to do; the plan still works for this tab.
+    // The plan still works for this tab; it just won't survive a reload.
   }
 }
 
@@ -80,8 +86,4 @@ export function usePlan() {
   }, [plan, loaded]);
 
   return { plan, setPlan, loaded };
-}
-
-export function exportPlan(plan: Plan): string {
-  return JSON.stringify(plan, null, 2);
 }
