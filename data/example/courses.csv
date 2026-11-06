@@ -1,0 +1,6 @@
+id,subject,number,title,credits
+EX101,EX,101,Intro A,3
+EX102,EX,102,Intro B,3
+EX201,EX,201,Overlap Course,3
+EX202,EX,202,Depth Only,3
+EX301,EX,301,Elective Only,4

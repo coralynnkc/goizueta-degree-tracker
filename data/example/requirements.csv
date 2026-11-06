@@ -1,0 +1,7 @@
+id,program_id,parent_id,label,rule_kind,threshold,allow_shared,display_order,source,signed_off_by
+EX-ROOT,EX,,Example degree,all,,false,0,made-up fixture,
+EX-CORE,EX,EX-ROOT,Core: both intro courses,all,,false,1,made-up fixture,
+EX-CORE-A,EX,EX-CORE,Intro A,count,1,false,2,made-up fixture,
+EX-CORE-B,EX,EX-CORE,Intro B,count,1,false,3,made-up fixture,
+EX-DEPTH,EX,EX-ROOT,Depth: one course,count,1,false,4,made-up fixture,
+EX-ELEC,EX,EX-ROOT,Electives: 6 credits,credits,6,false,5,made-up fixture,

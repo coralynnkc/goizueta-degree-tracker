@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Goizueta Degree Tracker
 
-## Getting Started
+Unofficial requirement tracker and semester planner for the Goizueta BBA. Built for the BUS 300
+Boardroom group activity (AI, Analytics & Emerging Technology). See `SPEC.md` for what it does and
+why it is built this way.
 
-First, run the development server:
+## Running it
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```sh
+npm install
+npm run dev     # compiles data/ into src/data/bundle.json, then starts http://localhost:3000
+npm test
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Adding requirement data
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Edit the CSVs in `data/` (or export them from the shared spreadsheet with the same column names),
+then run `npm run data`. If a row is wrong it tells you which file and row. Column definitions are in
+`SPEC.md`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Layout
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+data/                 authoring CSVs (real data); data/example/ is a made-up test fixture
+scripts/build-data.ts CSV -> src/data/bundle.json
+src/lib/types.ts      requirement model
+src/lib/compile.ts    CSV validation
+src/lib/plan.ts       student plan + localStorage
+src/lib/solver.ts     requirement satisfaction (to do)
+src/app/              UI
+```
