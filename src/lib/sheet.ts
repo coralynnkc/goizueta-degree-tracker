@@ -305,3 +305,13 @@ export function terms(): string[] {
   for (let y = 2022; y <= 2030; y++) out.push(`Spring ${y}`, `Summer ${y}`, `Fall ${y}`);
   return out;
 }
+
+// ---------- labels ----------
+
+export const STATUS_LABEL: Record<Status, string> = {
+  "": "Not started",
+  planned: "Planned",
+  in_progress: "In progress",
+  completed: "Completed",
+  waived: "Waived / N/A",
+};

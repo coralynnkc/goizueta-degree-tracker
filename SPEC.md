@@ -16,7 +16,7 @@ transcripts, Emory College majors and minors.
 ## Decisions
 
 **No accounts, no database, no backend.** The plan lives in `localStorage` under `gdt.plan.v2`.
-A plan belongs to one browser; Export/Import moves it as a JSON file. Nothing a student enters leaves
+A plan belongs to one browser. Export downloads it as a CSV (one line per row, with a row ID column); students can fill it out in Google Sheets or Excel and Import it back (`src/lib/csv.ts`). Nothing a student enters leaves
 their machine.
 
 **The student assigns courses to rows.** The technical plan proposed a max-flow solver that works out

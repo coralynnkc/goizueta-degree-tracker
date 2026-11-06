@@ -1,29 +1,44 @@
 @import "tailwindcss";
 
-:root {
-  --background: #f8f9fa;
-  --foreground: #202124;
-  color-scheme: light;
+/* Emory palette: Emory Blue #012169, Emory Gold #F2A900, on white. */
+@theme {
+  --color-brand: #012169;
+  --color-brand-700: #0a2d7a;
+  --color-brand-100: #dbe3f2;
+  --color-brand-50: #eef2f9;
+  --color-gold: #f2a900;
+  --color-gold-700: #8a6100;
+  --color-gold-50: #fdf5e0;
+  --color-ink: #161b26;
+  --color-muted: #5d6475;
+  --color-faint: #9aa1ae;
+  --color-line: #e7e9ee;
+  --color-surface: #f6f7f9;
+  --color-good: #1e7d4f;
+  --color-good-50: #e7f4ed;
+  --color-bad: #b42318;
+  --color-bad-50: #fdeceb;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  /* Google Sheets' default face */
-  font-family: Arial, Helvetica, sans-serif;
+:root {
+  color-scheme: light;
 }
 
-/* Dropdown caret for the Sheets-style chip selects */
+body {
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Dropdown caret for the chip selects */
 .chip-select {
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path d='M0 0l5 6 5-6z' fill='%235f6368'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%239aa1ae' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
   background-repeat: no-repeat;
   background-size: 8px;
   background-position: right 8px center;
